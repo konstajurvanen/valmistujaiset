@@ -449,7 +449,7 @@
                 let riseDistance;
                 if (this.isHigh) {
                     // Higher rising fireworks that travel further up the screen
-                    riseDistance = Math.floor(Math.random() * 20) + 25; 
+                    riseDistance = Math.floor(Math.random() * 16) + 20; 
                 } else {
                     // Maintain the exact same rise height (roughly 8 to 15 rows upward) as the old small box
                     riseDistance = Math.floor(Math.random() * 8) + 8;
@@ -599,7 +599,6 @@
                 new Firework(false, 16),  // ~1.0s delay
                 new Firework(true, 24),   // ~1.5s delay
                 new Firework(false, 32),  // ~2.0s delay
-                new Firework(true, 40)    // ~2.5s delay
             ];
             if (!animationInterval) {
                 startAnimationLoop();
