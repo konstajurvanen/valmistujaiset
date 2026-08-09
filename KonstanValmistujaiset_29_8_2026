@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tervetuloa!</title>
+    <style>
+        :root {
+            --window-bg: #0c0c0c;
+            --title-bar-bg: #1c1c1c;
+            --text-main: #e6e6e6;
+            --text-muted: #858585;
+            --accent-blue: #68a6f2;
+            --accent-cyan: #00d7ff;
+            --border-color: #333333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+		body {
+            /* Replace the solid black background with a smooth gradient */
+            background: radial-gradient(circle at top,#14213d 0%,#081018 45%,#040608 100%);
+            
+            /* Keep the rest of your existing properties exactly the same */
+            color: var(--text-main);
+            font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+/* Stars */
+
+.stars{
+    position:fixed;
+    inset:0;
+}
+
+.star{
+    position:absolute;
+    width:2px;
+    height:2px;
+    background:white;
+    opacity:.4;
+    animation:twinkle 3s infinite alternate;
+}
+
+@keyframes twinkle{
+    from{opacity:.2;}
+    to{opacity:1;}
+}
+		
+        /* Windows Terminal Window Frame */
+        .terminal-window {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--window-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Windows Terminal Title & Tab Bar */
+        .title-bar {
+            background-color: var(--title-bar-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 36px;
+            padding: 0 12px;
+            user-select: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 10;
+        }
+
+        .tabs {
+            display: flex;
+            align-items: flex-end;
+            height: 100%;
+            gap: 2px;
+        }
+
+        .tab {
+            color: var(--text-main);
+            font-size: 0.8rem;
+            padding: 0 16px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            border-radius: 4px 4px 0 0;
+            border: 1px solid var(--border-color);
+            position: relative;
+            bottom: -1px;
+            cursor: pointer;
+            transition: background-color 0.2s, opacity 0.2s;
+        }
+
+        .tab.active {
+            background-color: var(--window-bg);
+            border-bottom: 1px solid var(--window-bg); /* Masks the bottom border */
+            opacity: 1;
+        }
+
+        .tab:not(.active) {
+            background-color: #222222;
+            border-bottom: 1px solid var(--border-color);
+            opacity: 0.6;
+        }
+        
+        .tab:not(.active):hover {
+            opacity: 0.9;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 16px;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        /* Main Body Content */
+        .terminal-body {
+            padding: 24px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            position: relative;
+            overflow: hidden; /* Ensures fireworks don't bleed outside the window */
+        }
+
+        /* Wrapper for the text to sit cleanly above the fireworks */
+        .content-layer {
+            position: relative;
+            z-index: 1;
+            /* Text shadow to ensure readable text when bright fireworks pass behind */
+            text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.9);
+        }
+
+        /* Tab Content Management */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        h1 {
+            font-size: 1.3rem;
+            color: #ffffff;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .prompt {
+            color: var(--accent-blue);
+            font-weight: bold;
+        }
+
+        .info-block {
+            margin: 24px 0 12px 0;
+            border-left: 3px solid var(--accent-blue);
+            padding-left: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: flex-start; /* Ensures label and value align at the top edge */
+        }
+
+        .info-label {
+            width: 130px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .info-value {
+            color: var(--text-main);
+        }
+
+        .terminal-btn {
+            background-color: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--accent-blue);
+            padding: 4px 12px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.2s ease;
+            text-shadow: none; /* Keep text on button crisp */
+        }
+
+        .terminal-btn:hover {
+            background-color: var(--accent-blue);
+            color: #000;
+            font-weight: bold;
+        }
+
+        /* Background ASCII Fireworks Canvas */
+        #asciiCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0;
+            transition: opacity 1s ease;
+            pointer-events: none; /* Let users select text through the canvas */
+        }
+
+        #asciiCanvas.visible {
+            opacity: 1;
+        }
+		
+		
+		/* Mobile Layout Adjustments */
+        @media (max-width: 480px) {
+            .terminal-body { padding: 16px; font-size: 0.85rem; }
+            h1 { font-size: 1.1rem; }
+            
+            /* Change the row to stack vertically */
+            .info-row {
+                flex-direction: column;
+                margin-bottom: 12px; /* Adds breathing room between blocks */
+            }
+
+            /* Allow the label to take up its natural width */
+            .info-label { 
+                width: auto; 
+                margin-bottom: 2px;
+            }
+
+            /* Indent the text and other elements on the next line */
+            .info-value,
+            .info-row p,
+            .info-row iframe,
+            .terminal-btn {
+                margin-left: 16px;
+            }
+
+            /* Optional: Make the map slightly wider on mobile since it's indented */
+            .info-row iframe {
+                width: 85% !important; 
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+    <div class="terminal-window">
+        <!-- Windows Terminal header wrapper structure -->
+        <div class="title-bar">
+            <div class="tabs">
+                <div class="tab active" id="tab-1" onclick="switchTab(1)">kutsu.exe</div>
+                <div class="tab" id="tab-2" onclick="switchTab(2)">kolehti.exe</div>
+            </div>
+            <div class="window-controls">
+                <span>─</span>
+                <span>🗖</span>
+                <span>✕</span>
+            </div>
+        </div>
+
+        <div class="terminal-body" id="terminalBody">
+            <!-- Background Canvas Container -->
+            <canvas id="asciiCanvas"></canvas>
+
+            <div class="content-layer">
+                
+                <!-- TAB 1: Main Info -->
+                <div id="content-1" class="tab-content active">
+                    <h1>Tervetuloa valmistujaisiini!</h1>
+                    <p><span class="prompt">PS C:\Program Files\pippalot></span> ./intro.ps1</p>
+                    
+                    <p style="margin: 14px;">
+                        Tämä koodin pätkä on jumittanut hetken... virallinen valmistumispäiväni taisi olla 28.12.2025 :) Mutta nyt on tullut sopiva hetki päräyttää pitkään hiottu ilotulitusnäytös taivaalle hyvällä poppoolla ja juhlistaa loppuun saatettua urakkaa rennosti mökkitunnelmissa!
+                    </p>
+                    
+                    <p><span class="prompt">PS C:\Program Files\pippalot></span> ./murkinaa.ps1</p>
+                    
+                    <p style="margin: 10px;">
+                        Aloitetaan klo 17 paikkeilla skumppalasien kilistelyllä. Piakkoin tämän jälkeen tarjolla vatsan täytettä ainakin kala- ja lihavaihtoehdoilla. Päälle vielä jälkkärikahvit ja vähän kakkua, jotta jaksamme juhlia tulitukseen asti! 
+                    </p>
+                    
+                    <p><span class="prompt">PS C:\Program Files\pippalot></span> ./illanvietto.ps1</p>
+                    
+                    <p style="margin: 10px;">
+                        Odotellaan auringonlaskua, sekä sen myötä illan huipentavaa pauketta ja väriloistoa vapaasti esimerkiksi mökkiaktiviteettien parissa. Ehkä jotain pikkuohjelmaa myös keksitään. Saunakin saattaa lämmetä ajoissa etenkin kehnomman kelin sattuessa. Myöhäiskesän helteet kuitenkin tilattu!
+                    </p>
+
+                    <p><span class="prompt">PS C:\Program Files\pippalot></span> ./info.ps1</p>
+                    <div class="info-block">
+                        <div class="info-row">
+                            <span class="info-label">PVM:</span>
+                            <span class="info-value">29. elokuuta, 2026</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">AJOITUS:</span>
+                            <span class="info-value">alkaen klo 17, </span> 
+                        </div>
+						<div class="info-row">
+						<span class="info-label"> </span>
+						<span class="info-value" style="color: var(--accent-cyan); font-weight: bold;"> show-time 21.00</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">SIJAINTI:</span>
+                            <span class="info-value">Härmätaipaleenkuja 31, 78710 Varkaus</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label"> </span>
+                            <iframe style="margin-top: 10px; margin-bottom: 10px; width: 40%; height: 100px" src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d313.62690784498795!2d28.155722768861846!3d62.242810002115036!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x469b1fc526825f15%3A0x52597c69c7d7340e!2sH%C3%A4rm%C3%A4taipaleenkuja%2031%2C%2078710%20Varkaus!5e1!3m2!1sfi!2sfi!4v1786272757445!5m2!1sfi!2sfi" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">PUKUKOODI:</span>
+                            <span class="info-value">Rento kesämökkitunnelmaan sopiva juhlavaatetus</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">VASTAUSPYYNTÖ:</span>
+                            <span class="info-value">17.8. mennessä allergiat, erityisruokavaliot, yöpaikkavahvistukset yms.</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">LISÄKSI:</span>
+                            <span class="info-value">Toivomme, että yöpyjät ottaisivat omat lakanat/pyyhkeet mukaan. 
+							Yöpyjiä yli 10-päinen poppoo ainakin tulossa :) 
+							Saunajuomaa tarjolla rajallinen määrä ja valikoima. Omia juomia saa myös tuoda mukanaan!</span>
+                        </div>
+						<div class="info-row" style="margin: 4px 0;">
+                            <span class="info-label">VAPAAEHTOISTA:</span>
+                            <button class="terminal-btn" onclick="switchTab(2)">Avaa kolehti.exe</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: Gift Info -->
+                <div id="content-2" class="tab-content">
+                    <h1>Lahjaidea</h1>
+                    <p><span class="prompt">PS C:\Program Files\pippalot></span> ./lahja.ps1</p>
+                    <p style="margin: 10px;">
+                        Halutessanne voitte sponsoroida ilotulituksen oheiskustannuksia, kuten tulituslautan rakennustarvikkeita tai lupamaksua pienellä kolehdilla esimerkiksi seuraavilla vaihtoehdoilla. 
+                    </p>
+                    <div class="info-block">
+                        <div class="info-row" style="margin-bottom: 18px;">
+                            <span class="info-label">MobilePay</span>
+                            <a class="info-value" href="https://qr.mobilepay.fi/box/7ee5e766-b156-453a-80dd-fec18ce4aa92/pay-in">Tulituskolehti</a>
+                        </div>
+                        <div class="info-row" style="margin-bottom: 18px;">
+                            <span class="info-label">Revolut</span>
+                            <a class="info-value" href="https://revolut.me/k_jurvanen">k_jurvanen</a>
+                        </div>
+                        <div class="info-row" style="margin-bottom: 18px;">
+                            <span class="info-label">WIN-WIN?</span>
+                            <a class="info-value" href="https://revolut.com/referral/?referral-code=konsta_80_rg9s!AUG1-26-AR&geo-redirect">Revolut-kutsulinkki Konstalta</a>
+							
+							
+							</div>
+						<div class="info-row">
+						<!-- saat kätevän valuutanvaihtokeinon ja uuden pankkitilin, jolla voit esimerkiksi pitää minimaalista summaa rahaa ja rekisteröityä palveluiden ilmaiskokeiluihin ilman, että tilaus täytyisi muistaa peruuttaa ;)-->
+                            <p>Mikälit et omista Revolut-tiliä: Voit yllä näkyvällä kutsulinkillä lahjoittaa minulle kutsubonuksen, jos teet linkin kautta oman ilmaisen Revolut-tilin ja tilaat n. 8e hintaisen pankkikortin Revolut-tiliäsi varten. Lisäksi sinun täytyy vielä tehdä kolme yli 5e maksua Revolutin kautta esim. mobiilipankkikortilla tai virtuaalisen kortin tiedoilla netissä.
+						</div>
+						<div class="info-row" style="margin-bottom: 24px;">
+							<p>Jos teet edellämainitut vaiheet 24.8. mennessä, saan Revolut-tililleni runsaana ilotulite-kolehtina 60 euroa, ja saat itsellesi kätevän korvaajan perinteisille pankeille! :D
+						</div>						
+                    </div>
+					<button class="terminal-btn" onclick="switchTab(1)">Takaisin kutsu.exe</button>
+                </div>
+
+                <!-- Scroll trigger sentinel -->
+                <div id="scrollSentinel"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching logic
+        function switchTab(tabId) {
+            // Update tabs
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById('content-' + tabId).classList.add('active');
+            
+            // Recalculate grid in case height changed drastically
+            if (canvas.classList.contains('visible')) {
+                resizeGrid();
+            }
+        }
+
+        const terminalBody = document.getElementById('terminalBody');
+        const canvas = document.getElementById('asciiCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const fontWidth = 10;
+        const fontHeight = 14;
+        let cols = 0, rows = 0;
+        let animationInterval = null;
+        let activeFireworks = [];
+
+        const colors = ['#ff4a4a', '#3b8eea', '#00d7ff', '#ffb000', '#d65db1', '#845ec2', '#ffffff'];
+
+        function resizeGrid() {
+            // Span the entire body size instead of a hardcoded box
+            canvas.width = terminalBody.clientWidth;
+            canvas.height = terminalBody.clientHeight;
+            
+            cols = Math.floor(canvas.width / fontWidth);
+            rows = Math.floor(canvas.height / fontHeight);
+        }
+
+        window.addEventListener('resize', () => {
+            if (canvas.classList.contains('visible')) {
+                resizeGrid();
+            }
+        });
+
+        class Firework {
+            constructor(isHigh = false, initialDelay = 0) { 
+                this.isHigh = isHigh;
+                this.initialDelay = initialDelay;
+                this.reset(true); 
+            }
+            
+            reset(isInitial = false) {
+                const validCols = cols > 10 ? cols : 50;
+
+                this.x = Math.floor(Math.random() * (validCols - 10)) + 5;
+                // Launch from the very bottom of the new terminal background space
+                this.y = rows - 1; 
+                
+                let riseDistance;
+                if (this.isHigh) {
+                    // Higher rising fireworks that travel further up the screen
+                    riseDistance = Math.floor(Math.random() * 20) + 25; 
+                } else {
+                    // Maintain the exact same rise height (roughly 8 to 15 rows upward) as the old small box
+                    riseDistance = Math.floor(Math.random() * 8) + 8;
+                }
+
+                this.targetY = this.y - riseDistance; 
+                
+                this.state = 'LAUNCH';
+                this.particles = [];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.tick = 0;
+                
+                // Add staggered delay on first launch, random slight delay on respawns to keep it feeling natural
+                this.delay = isInitial ? this.initialDelay : Math.floor(Math.random() * 10);
+                this.wDirection = Math.random() > 0.5 ? 1 : -1; 
+            }
+
+            update() {
+                // Handle staggered launch delays
+                if (this.delay > 0) {
+                    this.delay--;
+                    return;
+                }
+
+                this.tick++;
+                if (this.state === 'LAUNCH') {
+                    // High-rising fireworks move faster vertically
+                    const riseSpeed = this.isHigh ? 0.75 : 0.5;
+                    this.y -= riseSpeed;
+                    
+                    if (Math.floor(this.tick / 3) % 2 === 0) {
+                        this.x += 0.4 * this.wDirection;
+                        this.char = '/';
+                    } else {
+                        this.x -= 0.4 * this.wDirection;
+                        this.char = '\\';
+                    }
+                    
+                    if (this.y <= this.targetY) {
+                        this.state = 'BURST';
+                        this.explode();
+                    }
+                } else if (this.state === 'BURST') {
+                    let allDead = true;
+                    this.particles.forEach(p => {
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.vy += 0.04;
+                        p.life--;
+                        if (p.life > 0) allDead = false;
+                    });
+                    if (allDead) this.state = 'DEAD';
+                }
+            }
+
+            explode() {
+                let count, speedBase, speedRand;
+                if (this.isHigh) {
+                    // Larger explosion for higher-rising fireworks
+                    count = Math.floor(Math.random() * 20) + 20; 
+                    speedBase = 0.3;
+                    speedRand = 0.4;
+                } else {
+                    // Original explosion size
+                    count = Math.floor(Math.random() * 12) + 12;
+                    speedBase = 0.2;
+                    speedRand = 0.3;
+                }
+
+                const chars = ['.', '*', 'o', '+'];
+                for (let i = 0; i < count; i++) {
+                    const angle = (Math.PI * 2 / count) * i + (Math.random() * 0.5);
+                    const speed = (Math.random() * speedRand) + speedBase;
+                    this.particles.push({
+                        x: this.x,
+                        y: this.y,
+                        vx: Math.cos(angle) * speed * 1.5,
+                        vy: Math.sin(angle) * speed,
+                        char: chars[Math.floor(Math.random() * chars.length)],
+                        life: Math.floor(Math.random() * 15) + 10
+                    });
+                }
+            }
+
+            draw(grid) {
+                // If delayed, don't draw anything yet
+                if (this.delay > 0) return;
+
+                const roundedX = Math.round(this.x);
+                const roundedY = Math.round(this.y);
+                if (this.state === 'LAUNCH') {
+                    if (roundedX >= 0 && roundedX < cols && roundedY >= 0 && roundedY < rows) {
+                        grid[roundedY][roundedX] = { char: this.char, color: '#858585' };
+                    }
+                } else if (this.state === 'BURST') {
+                    this.particles.forEach(p => {
+                        const px = Math.round(p.x);
+                        const py = Math.round(p.y);
+                        if (px >= 0 && px < cols && py >= 0 && py < rows && p.life > 0) {
+                            let renderChar = p.char;
+                            if (p.life < 4) renderChar = '.';
+                            grid[py][px] = { char: renderChar, color: this.color };
+                        }
+                    });
+                }
+            }
+        }
+
+        function startAnimationLoop() {
+            animationInterval = setInterval(() => {
+                if (rows <= 0 || cols <= 0) return;
+
+                let grid = Array(rows).fill(null).map(() => Array(cols).fill({ char: ' ', color: 'transparent' }));
+
+                activeFireworks.forEach(fw => {
+                    fw.update();
+                    if (fw.state === 'DEAD') fw.reset();
+                    fw.draw(grid);
+                });
+
+                // Clear instead of filling to allow the terminal window background color to remain visible
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.font = "12px 'Cascadia Code', 'Consolas', monospace";
+
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const cell = grid[r][c];
+                        if (cell && cell.char !== ' ') {
+                            ctx.fillStyle = cell.color;
+                            ctx.fillText(cell.char, c * fontWidth, r * fontHeight + 10);
+                        }
+                    }
+                }
+            }, 65);
+        }
+
+        function launchFireworks() {
+            canvas.classList.add('visible');
+            resizeGrid();
+            // Assign staggered delays in animation ticks (~65ms per tick)
+            activeFireworks = [
+                new Firework(false, 0),   // Instant
+                new Firework(true, 8),    // ~0.5s delay
+                new Firework(false, 16),  // ~1.0s delay
+                new Firework(true, 24),   // ~1.5s delay
+                new Firework(false, 32),  // ~2.0s delay
+                new Firework(true, 40)    // ~2.5s delay
+            ];
+            if (!animationInterval) {
+                startAnimationLoop();
+            }
+        }
+
+        // Trigger fireworks automatically when scrolled to the end of the text info
+        const sentinel = document.getElementById('scrollSentinel');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    launchFireworks();
+                    observer.disconnect();
+                }
+            });
+        }, { threshold: 0.5 });
+
+        observer.observe(sentinel);
+		
+		const stars = document.getElementById("stars");
+
+        for(let i=0; i<70; i++) {
+            const s = document.createElement("div");
+            s.className = "star";
+            s.style.left = Math.random() * 100 + "%";
+            s.style.top = Math.random() * 100 + "%";
+            s.style.animationDelay = Math.random() * 3 + "s";
+            
+            // Fixed: Added backticks around the scale string
+            s.style.transform = `scale(${Math.random() * 1.8 + .3})`;
+            
+            stars.appendChild(s);
+        }
+		
+    </script>
+</body>
+</html>
