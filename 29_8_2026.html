@@ -287,7 +287,9 @@
                     <p><span class="prompt">PS C:\Program Files\pippalot></span> ./intro.ps1</p>
                     
                     <p style="margin: 14px;">
-                        Tämä koodin pätkä on jumittanut hetken... virallinen valmistumispäiväni taisi olla 28.12.2025 :) Mutta nyt on tullut sopiva hetki päräyttää pitkään hiottu ilotulitusnäytös taivaalle hyvällä poppoolla ja juhlistaa loppuun saatettua urakkaa rennosti mökkitunnelmissa!
+                        Tämä koodin pätkä on jumittanut hetken... virallinen valmistumispäiväni taisi olla viime joulukuun 
+						paikkeilla :) Mutta nyt on tullut sopiva hetki päräyttää pitkään hiottu ilotulitusnäytös taivaalle hyvällä 
+						poppoolla ja juhlistaa loppuun saatettua urakkaa rennosti mökkitunnelmissa!
                     </p>
                     
                     <p><span class="prompt">PS C:\Program Files\pippalot></span> ./murkinaa.ps1</p>
@@ -323,7 +325,7 @@
                         <div class="info-row">
                             <span class="info-label"> </span>
                             <iframe style="margin-top: 10px; margin-bottom: 10px; width: 40%; height: 100px" src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d313.62690784498795!2d28.155722768861846!3d62.242810002115036!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x469b1fc526825f15%3A0x52597c69c7d7340e!2sH%C3%A4rm%C3%A4taipaleenkuja%2031%2C%2078710%20Varkaus!5e1!3m2!1sfi!2sfi!4v1786272757445!5m2!1sfi!2sfi" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
-                        </div>
+							</div>
                         <div class="info-row">
                             <span class="info-label">PUKUKOODI:</span>
                             <span class="info-value">Rento kesämökkitunnelmaan sopiva juhlavaatetus</span>
@@ -340,14 +342,14 @@
                         </div>
 						<div class="info-row" style="margin: 4px 0;">
                             <span class="info-label">VAPAAEHTOISTA:</span>
-                            <button class="terminal-btn" onclick="switchTab(2)">Avaa kolehti.exe</button>
+                            <button class="terminal-btn" onclick="switchTab(2); window.scrollTo(0, 0);">Avaa kolehti.exe</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- TAB 2: Gift Info -->
                 <div id="content-2" class="tab-content">
-                    <h1>Lahjaidea</h1>
+                    <h1>Lahjaidea:</h1>
                     <p><span class="prompt">PS C:\Program Files\pippalot></span> ./lahja.ps1</p>
                     <p style="margin: 10px;">
                         Halutessanne voitte sponsoroida ilotulituksen oheiskustannuksia, kuten tulituslautan rakennustarvikkeita tai lupamaksua pienellä kolehdilla esimerkiksi seuraavilla vaihtoehdoilla. 
@@ -369,13 +371,15 @@
 							</div>
 						<div class="info-row">
 						<!-- saat kätevän valuutanvaihtokeinon ja uuden pankkitilin, jolla voit esimerkiksi pitää minimaalista summaa rahaa ja rekisteröityä palveluiden ilmaiskokeiluihin ilman, että tilaus täytyisi muistaa peruuttaa ;)-->
-                            <p>Mikälit et omista Revolut-tiliä: Voit yllä näkyvällä kutsulinkillä lahjoittaa minulle kutsubonuksen, jos teet linkin kautta oman ilmaisen Revolut-tilin ja tilaat n. 8e hintaisen pankkikortin Revolut-tiliäsi varten. Lisäksi sinun täytyy vielä tehdä kolme yli 5e maksua Revolutin kautta esim. mobiilipankkikortilla tai virtuaalisen kortin tiedoilla netissä.
+                            <p>Mikäli et omista Revolut-tiliä, voit yllä näkyvällä kutsulinkillä lahjoittaa minulle kutsubonuksen, jos teet linkin kautta oman ilmaisen Revolut-tilin ja tilaat n. 8e hintaisen pankkikortin Revolut-tiliäsi varten. Lisäksi sinun täytyy vielä tehdä kolme yli 5e maksua Revolutin kautta esim. mobiilipankkikortilla tai kortin tiedoilla netissä.
 						</div>
 						<div class="info-row" style="margin-bottom: 24px;">
-							<p>Jos teet edellämainitut vaiheet 24.8. mennessä, saan Revolut-tililleni runsaana ilotulite-kolehtina 60 euroa, ja saat itsellesi kätevän korvaajan perinteisille pankeille! :D
+							<p>Jos teet edellämainitut vaiheet 24.8. mennessä, saan Revolut-tililleni runsaana 
+							ilotulituskolehtina 60 euroa, ja saat itsellesi kätevän vaihtoehdon perinteisille 
+							pankeille sekä kansainvälisen korvaajan MobilePaylle! :D
 						</div>						
                     </div>
-					<button class="terminal-btn" onclick="switchTab(1)">Takaisin kutsu.exe</button>
+					<button class="terminal-btn" onclick="switchTab(1); window.scrollTo(0, 0);">Takaisin kutsu.exe</button>
                 </div>
 
                 <!-- Scroll trigger sentinel -->
@@ -461,6 +465,9 @@
                 // Add staggered delay on first launch, random slight delay on respawns to keep it feeling natural
                 this.delay = isInitial ? this.initialDelay : Math.floor(Math.random() * 10);
                 this.wDirection = Math.random() > 0.5 ? 1 : -1; 
+				
+				// FIXED: Give the firework a default character to draw on the transition frame!
+                this.char = '|';
             }
 
             update() {
@@ -614,7 +621,7 @@
 		
 		const stars = document.getElementById("stars");
 
-        for(let i=0; i<70; i++) {
+        for(let i=0; i<50; i++) {
             const s = document.createElement("div");
             s.className = "star";
             s.style.left = Math.random() * 100 + "%";
